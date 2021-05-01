@@ -7,7 +7,6 @@ include $(AMREX_HOME)/Tools/GNUMake/Make.defs
 Bdirs := src
 Bdirs += src/boundary_conditions
 Bdirs += src/convection
-Bdirs += src/convection/Godunov
 Bdirs += src/derive
 Bdirs += src/diffusion
 Bdirs += src/prob
@@ -18,7 +17,6 @@ Bdirs += src/utilities
 
 ifeq ($(USE_EB), TRUE)
   Bdirs += src/embedded_boundaries
-  Bdirs += src/convection/EBGodunov
   Bdirs += src/convection/Redistribution
   USERSuffix += .EB
 endif
