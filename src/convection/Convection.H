@@ -14,24 +14,15 @@
 
 namespace convection {
 
-    void compute_convective_term (amrex::Box const& bx, amrex::MFIter const& mfi,
-                                  amrex::Array4<amrex::Real> const& dvdt, // velocity
-                                  amrex::Array4<amrex::Real> const& drdt, // density
-                                  amrex::Array4<amrex::Real> const& dtdt, // tracer
+    void compute_convective_term (amrex::Box const& bx,
+                                  amrex::Array4<amrex::Real> const& dbydt,
                                   AMREX_D_DECL(amrex::Array4<amrex::Real const> const& u_mac,
                                                amrex::Array4<amrex::Real const> const& v_mac,
                                                amrex::Array4<amrex::Real const> const& w_mac),
                                   AMREX_D_DECL(amrex::Array4<amrex::Real const> const& flux_x,
                                                amrex::Array4<amrex::Real const> const& flux_y,
                                                amrex::Array4<amrex::Real const> const& flux_z),
-                                  int  const* d_vel_iconserv,
-                                  int  const* d_den_iconserv,
-                                  int  const* d_tra_iconserv,
-                                  bool l_constant_density, 
-                                  bool l_advect_tracer, int l_ntrac,
-#ifdef AMREX_USE_EB
-                                  amrex::EBFArrayBoxFactory const* ebfact,
-#endif
+                                  int  const* d_iconserv,
                                   amrex::Geometry& geom);
 
     void compute_fluxes (amrex::Box const& bx, amrex::MFIter const& mfi,
@@ -65,29 +56,7 @@ namespace convection {
                          amrex::Geometry& geom,
                          amrex::Real l_dt);
 
-    void compute_convective_update ( amrex::Box const& bx, int flux_comp, int ncomp,
-                                     amrex::Array4<amrex::Real> const& dUdt,
-                                     AMREX_D_DECL(amrex::Array4<amrex::Real const> const& fx,
-                                                  amrex::Array4<amrex::Real const> const& fy,
-                                                  amrex::Array4<amrex::Real const> const& fz),
-                                     AMREX_D_DECL(amrex::Array4<amrex::Real const> const& umac,
-                                                  amrex::Array4<amrex::Real const> const& vmac,
-                                                  amrex::Array4<amrex::Real const> const& wmac),
-                                     amrex::Geometry& geom, int const* iconserv);
-   
 #ifdef AMREX_USE_EB
-
-    void compute_convective_update_eb (amrex::Box const& bx, int flux_comp, int ncomp,
-                                        amrex::Array4<amrex::Real> const& dUdt,
-                                        AMREX_D_DECL(amrex::Array4<amrex::Real const> const& fx,
-                                                     amrex::Array4<amrex::Real const> const& fy,
-                                                     amrex::Array4<amrex::Real const> const& fz),
-                                        amrex::Array4<amrex::EBCellFlag const> const& flag,
-                                        amrex::Array4<amrex::Real const> const& vfrac,
-                                        AMREX_D_DECL(amrex::Array4<amrex::Real const> const& apx,
-                                                     amrex::Array4<amrex::Real const> const& apy,
-                                                     amrex::Array4<amrex::Real const> const& apz),
-                                        amrex::Geometry& geom, int const* iconserv);
 
     void redistribute_convective_term (amrex::Box const& bx, amrex::MFIter const& mfi,
                                        amrex::Array4<amrex::Real const> const& vel,       // velocity

@@ -1,8 +1,9 @@
 #include <Godunov.H>
-#include <MOL.H>
+#include <hydro_mol.H>
 #include <incflo.H>
 
 #ifdef AMREX_USE_EB
+#include <hydro_ebmol.H>
 #include <EBGodunov.H>
 #endif
 
@@ -134,8 +135,14 @@ incflo::compute_MAC_projected_velocities (
 #endif
         } else if (m_advection_type == "MOL") {
 
+#ifdef AMREX_USE_EB
+            EBMOL::ExtrapVelToFaces(*vel[lev], AMREX_D_DECL(*u_mac[lev], *v_mac[lev], *w_mac[lev]), geom[lev],
+                                    get_velocity_bcrec(), get_velocity_bcrec_device_ptr());
+#else
             MOL::ExtrapVelToFaces(*vel[lev], AMREX_D_DECL(*u_mac[lev], *v_mac[lev], *w_mac[lev]), geom[lev],
                                    get_velocity_bcrec(), get_velocity_bcrec_device_ptr());
+#endif
+
         } else {
             amrex::Abort("Dont know this advection type");
         }
