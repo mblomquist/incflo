@@ -1,6 +1,5 @@
 #include <Convection.H>
 #include <Godunov.H>
-#include <MOL.H>
 
 #ifdef AMREX_USE_EB
 #include <EBGodunov.H>
@@ -97,13 +96,7 @@ convection::compute_fluxes (Box const& bx, MFIter const& mfi,
                                                   AMREX_D_DECL(fcx, fcy, fcz), ccc, 
                                                   geom, true); // is_velocity
             else
-                MOL::compute_convective_fluxes_eb(bx, flux_comp, AMREX_SPACEDIM,
-                                                  AMREX_D_DECL(fx, fy, fz), vel, 
-                                                  AMREX_D_DECL(umac, vmac, wmac),
-                                                  l_bcrec_velocity.data(),
-                                                  l_bcrec_velocity_d,
-                                                  l_iconserv_velocity_d,
-                                                  flag, AMREX_D_DECL(fcx, fcy, fcz), ccc, vfrac, geom);
+                amrex::Abort("shouldnt be here");
             flux_comp += AMREX_SPACEDIM;
 
             if (!l_constant_density) {
@@ -120,13 +113,7 @@ convection::compute_fluxes (Box const& bx, MFIter const& mfi,
                                                       AMREX_D_DECL(fcx, fcy, fcz), ccc, 
                                                       geom);
                 else
-                    MOL::compute_convective_fluxes_eb(bx, flux_comp, 1,
-                                                      AMREX_D_DECL(fx, fy, fz), rho, 
-                                                      AMREX_D_DECL(umac, vmac, wmac),
-                                                      l_bcrec_density.data(),
-                                                      l_bcrec_density_d,
-                                                      l_iconserv_density_d,
-                                                      flag, AMREX_D_DECL(fcx, fcy, fcz), ccc, vfrac, geom);
+                    amrex::Abort("shouldnt be here");
                 flux_comp += 1;
             }
             if (l_advect_tracer) {
@@ -143,13 +130,7 @@ convection::compute_fluxes (Box const& bx, MFIter const& mfi,
                                                       AMREX_D_DECL(fcx, fcy, fcz), ccc, 
                                                       geom);
                 else
-                    MOL::compute_convective_fluxes_eb(bx, flux_comp, l_ntrac,
-                                                      AMREX_D_DECL(fx, fy, fz), rhotra, 
-                                                      AMREX_D_DECL(umac, vmac, wmac),
-                                                      l_bcrec_tracer.data(),
-                                                      l_bcrec_tracer_d,
-                                                      l_iconserv_tracer_d,
-                                                      flag, AMREX_D_DECL(fcx, fcy, fcz), ccc, vfrac, geom);
+                    amrex::Abort("shouldnt be here");
             }
             Gpu::streamSynchronize();
         }
@@ -168,11 +149,7 @@ convection::compute_fluxes (Box const& bx, MFIter const& mfi,
                                                     l_godunov_use_forces_in_trans, 
                                                     geom, true);
                 else
-                    MOL::compute_convective_fluxes(bx, flux_comp, AMREX_SPACEDIM, AMREX_D_DECL(fx, fy, fz), vel,
-                                                   AMREX_D_DECL(umac, vmac, wmac),
-                                                   l_bcrec_velocity.data(),
-                                                   l_bcrec_velocity_d,
-                                                   l_iconserv_velocity_d, geom);
+                    amrex::Abort("shouldnt be here");
 
             flux_comp += AMREX_SPACEDIM;
 
@@ -188,11 +165,7 @@ convection::compute_fluxes (Box const& bx, MFIter const& mfi,
                                                     l_godunov_use_forces_in_trans,
                                                     geom);
                 else
-                    MOL::compute_convective_fluxes(bx, flux_comp, 1, AMREX_D_DECL(fx, fy, fz), rho,
-                                                   AMREX_D_DECL(umac, vmac, wmac),
-                                                   l_bcrec_density.data(),
-                                                   l_bcrec_density_d, 
-                                                   l_iconserv_density_d, geom);
+                    amrex::Abort("shouldnt be here");
                flux_comp += 1;
             }
             if (l_advect_tracer) {
@@ -207,11 +180,7 @@ convection::compute_fluxes (Box const& bx, MFIter const& mfi,
                                                     l_godunov_use_forces_in_trans,
                                                     geom);
                 else
-                   MOL::compute_convective_fluxes(bx, flux_comp, l_ntrac, AMREX_D_DECL(fx, fy, fz), rhotra,
-                                                  AMREX_D_DECL(umac, vmac, wmac),
-                                                  l_bcrec_tracer.data(),
-                                                  l_bcrec_tracer_d, 
-                                                  l_iconserv_tracer_d, geom);
+                    amrex::Abort("shouldnt be here");
             }
             Gpu::streamSynchronize();
         }

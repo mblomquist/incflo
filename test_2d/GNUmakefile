@@ -1,5 +1,7 @@
 AMREX_HOME ?= ../../amrex
-AMREX_HYDRO_HOME ?= ../../AMReX-Hydro
+
+AMREX_HYDRO_HOME ?= ../src/convection/AMReX-Hydro
+
 TOP = ..
 
 EBASE = incflo
