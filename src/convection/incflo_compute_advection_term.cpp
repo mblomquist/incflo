@@ -390,7 +390,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                    get_density_bcrec_device_ptr(),
                                    get_density_iconserv_device_ptr(),
 #ifdef AMREX_USE_EB
-                                   tmpfab_v.dataPtr(), flag,
+                                   tmpfab_d.dataPtr(), flag,
                                    AMREX_D_DECL(apx,apy,apz), vfrac,
                                    AMREX_D_DECL(fcx,fcy,fcz), ccc,
 #else
@@ -479,7 +479,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                    get_tracer_bcrec_device_ptr(),
                                    get_tracer_iconserv_device_ptr(),
 #ifdef AMREX_USE_EB
-                                   tmpfab_v.dataPtr(), flag,
+                                   tmpfab_t.dataPtr(), flag,
                                    AMREX_D_DECL(apx,apy,apz), vfrac,
                                    AMREX_D_DECL(fcx,fcy,fcz), ccc,
 #else
