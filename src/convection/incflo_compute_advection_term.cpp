@@ -285,7 +285,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
 #else
             Godunov::ComputeEdgeState( 
 #endif
-                                   bx, AMREX_SPACEDIM, 
+                                   bx, ncomp,
                                    vel[lev]->const_array(mfi), 
                                    AMREX_D_DECL(face_x[lev].array(mfi,edge_comp),
                                                 face_y[lev].array(mfi,edge_comp),
@@ -302,18 +302,15 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                    get_velocity_bcrec(), 
 #endif
                                    get_velocity_bcrec_device_ptr(),
+                                   get_velocity_iconserv_device_ptr(),
 #ifdef AMREX_USE_EB
-                                   get_velocity_iconserv_device_ptr(),
-                                   tmpfab_v.dataPtr(),
-                                   flag,
-                                   AMREX_D_DECL(apx,apy,apz),
-                                   vfrac,
-                                   AMREX_D_DECL(fcx,fcy,fcz),
-                                   ccc, is_velocity);
+                                   tmpfab_v.dataPtr(), flag,
+                                   AMREX_D_DECL(apx,apy,apz), vfrac,
+                                   AMREX_D_DECL(fcx,fcy,fcz), ccc,
 #else
-                                   get_velocity_iconserv_device_ptr(),
-                                   m_godunov_ppm, is_velocity, m_godunov_use_forces_in_trans);
+                                   m_godunov_ppm, m_godunov_use_forces_in_trans,
 #endif
+                                   is_velocity);
             }
 
             // Compute fluxes
@@ -391,18 +388,15 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                    get_density_bcrec(), 
 #endif
                                    get_density_bcrec_device_ptr(),
+                                   get_density_iconserv_device_ptr(),
 #ifdef AMREX_USE_EB
-                                   get_density_iconserv_device_ptr(),
-                                   tmpfab_d.dataPtr(),
-                                   flag,
-                                   AMREX_D_DECL(apx,apy,apz),
-                                   vfrac,
-                                   AMREX_D_DECL(fcx,fcy,fcz),
-                                   ccc, is_velocity);
+                                   tmpfab_v.dataPtr(), flag,
+                                   AMREX_D_DECL(apx,apy,apz), vfrac,
+                                   AMREX_D_DECL(fcx,fcy,fcz), ccc,
 #else
-                                   get_density_iconserv_device_ptr(),
-                                   m_godunov_ppm, is_velocity, m_godunov_use_forces_in_trans);
+                                   m_godunov_ppm, m_godunov_use_forces_in_trans,
 #endif
+                                   is_velocity);
             }
 
             // Compute fluxes
@@ -483,18 +477,15 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                    get_tracer_bcrec(), 
 #endif
                                    get_tracer_bcrec_device_ptr(),
+                                   get_tracer_iconserv_device_ptr(),
 #ifdef AMREX_USE_EB
-                                   get_tracer_iconserv_device_ptr(),
-                                   tmpfab_t.dataPtr(),
-                                   flag,
-                                   AMREX_D_DECL(apx,apy,apz),
-                                   vfrac,
-                                   AMREX_D_DECL(fcx,fcy,fcz),
-                                   ccc, is_velocity);
+                                   tmpfab_v.dataPtr(), flag,
+                                   AMREX_D_DECL(apx,apy,apz), vfrac,
+                                   AMREX_D_DECL(fcx,fcy,fcz), ccc,
 #else
-                                   get_tracer_iconserv_device_ptr(),
-                                   m_godunov_ppm, is_velocity, m_godunov_use_forces_in_trans);
+                                   m_godunov_ppm, m_godunov_use_forces_in_trans,
 #endif
+                                   is_velocity);
             }
 
             // Compute fluxes
@@ -697,6 +688,12 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                           ebfact, geom[lev], m_dt);
        } // mfi
 #endif
+
+        // We want to return MINUS divergence so here we multiply by -1
+        conv_u[lev]->mult(-1.0);
+        if (!m_constant_density)
+            conv_r[lev]->mult(-1.0);
+        if (m_advect_tracer && m_ntrac > 0)
+            conv_t[lev]->mult(-1.0);
     } // lev
 }
-

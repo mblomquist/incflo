@@ -55,26 +55,6 @@ void redistribution::redistribute_eb (Box const& bx, int ncomp,
         int icomp = 0;
         apply_flux_redistribution (bx, dUdt_out, dUdt_in, scratch, icomp, ncomp, flag, vfrac, lev_geom);
 
-    } else if (redistribution_type == "MergeRedist") {
-
-        amrex::ParallelFor(Box(dUdt_in), ncomp,
-        [=] AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
-            {
-                dUdt_in(i,j,k,n) = U_in(i,j,k,n) + dt * dUdt_in(i,j,k,n);
-            }
-        );
-
-        make_itracker(bx, AMREX_D_DECL(apx, apy, apz), vfrac, itr, lev_geom, "Merge");
-
-        merge_redistribute(bx, ncomp, dUdt_out, dUdt_in, vfrac, itr, lev_geom);
-
-        amrex::ParallelFor(bx, ncomp,
-        [=] AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
-            {
-                dUdt_out(i,j,k,n) = (dUdt_out(i,j,k,n) - U_in(i,j,k,n)) / dt;
-            }
-        );
-
     } else if (redistribution_type == "StateRedist") {
 
         Box domain_per_grown = lev_geom.Domain();
@@ -99,7 +79,7 @@ void redistribution::redistribute_eb (Box const& bx, int ncomp,
         amrex::ParallelFor(Box(scratch), ncomp,
         [=] AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
             {
-                scratch(i,j,k,n) = U_in(i,j,k,n) + dt * dUdt_in(i,j,k,n);
+                scratch(i,j,k,n) = U_in(i,j,k,n) - dt * dUdt_in(i,j,k,n);
             }
         );
 
@@ -111,7 +91,7 @@ void redistribution::redistribute_eb (Box const& bx, int ncomp,
         amrex::ParallelFor(bx, ncomp,
         [=] AMREX_GPU_DEVICE (int i, int j, int k, int n) noexcept
             {
-                dUdt_out(i,j,k,n) = (dUdt_out(i,j,k,n) - U_in(i,j,k,n)) / dt;
+                dUdt_out(i,j,k,n) = -(dUdt_out(i,j,k,n) - U_in(i,j,k,n)) / dt;
             }
         );
 
