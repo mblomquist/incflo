@@ -198,10 +198,10 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
         auto const& ebfact = EBFactory(lev);
 
         if (!ebfact.isAllRegular())
-            EB_computeDivergence(divu,u,geom[lev],true);
+            amrex::EB_computeDivergence(divu,u,geom[lev],true);
         else
 #endif
-        computeDivergence(divu,u,geom[lev]);
+        amrex::computeDivergence(divu,u,geom[lev]);
 
         divu.FillBoundary(geom[lev].periodicity());
 
@@ -629,6 +629,14 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
         auto const& vfrac = ebfact->getVolFrac();
 #endif
 
+#ifdef AMREX_USE_EB
+//      if (!ebfact->isAllRegular())
+//          amrex::EB_computeDivergence(divu,u,geom[lev],true);
+//      else
+#endif
+//      amrex::computeDivergence(divu,u,geom[lev]);
+
+
 #ifdef _OPENMP
 #pragma omp parallel if (Gpu::notInLaunchRegion())
 #endif
@@ -639,12 +647,14 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
             flux_comp = 0;
 #ifdef AMREX_USE_EB
             EBCellFlagFab const& flagfab = ebfact->getMultiEBCellFlagFab()[mfi];
+            Real mult = 1.0;  
             if (flagfab.getType(bx) != FabType::covered)
                 HydroUtils::EB_ComputeDivergence(bx, dvdt_tmp.array(mfi),
                                                  AMREX_D_DECL(flux_x[lev].const_array(mfi,flux_comp),
                                                               flux_y[lev].const_array(mfi,flux_comp),
                                                               flux_z[lev].const_array(mfi,flux_comp)),
-                                                 vfrac.const_array(mfi), AMREX_SPACEDIM, geom[lev]);
+                                                 vfrac.const_array(mfi), AMREX_SPACEDIM, geom[lev],
+                                                 mult);
 //                                               get_velocity_iconserv_device_ptr(),
 #else
             HydroUtils::ComputeDivergence(bx, conv_u[lev]->array(mfi),
@@ -658,13 +668,14 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                        v_mac[lev]->const_array(mfi),
                                                        w_mac[lev]->const_array(mfi)),
                                           AMREX_SPACEDIM, geom[lev],
-                                          get_velocity_iconserv_device_ptr());
+                                          get_velocity_iconserv_device_ptr(), mult);
 #endif
-        }
+        } // mfi
 
         if (!m_constant_density)
         {
           flux_comp = AMREX_SPACEDIM;
+          Real mult = 1.0;  
           for (MFIter mfi(*conv_r[lev],TilingIfNotGPU()); mfi.isValid(); ++mfi)
           {
             Box const& bx = mfi.tilebox();
@@ -676,7 +687,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                  AMREX_D_DECL(flux_x[lev].const_array(mfi,flux_comp),
                                                               flux_y[lev].const_array(mfi,flux_comp),
                                                               flux_z[lev].const_array(mfi,flux_comp)),
-                                                 vfrac.const_array(mfi), 1, geom[lev]);
+                                                 vfrac.const_array(mfi), 1, geom[lev], mult);
 //                                               get_density_iconserv_device_ptr(),
 #else
             HydroUtils::ComputeDivergence(bx, conv_r[lev]->array(mfi),
@@ -690,7 +701,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                        v_mac[lev]->const_array(mfi),
                                                        w_mac[lev]->const_array(mfi)),
                                           1, geom[lev],
-                                          get_density_iconserv_device_ptr());
+                                          get_density_iconserv_device_ptr(), mult);
 #endif
           } // mfi
         } // not constant density
@@ -701,6 +712,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
               flux_comp = AMREX_SPACEDIM;
           else
               flux_comp = AMREX_SPACEDIM+1;
+          Real mult = 1.0;  
           for (MFIter mfi(*conv_t[lev],TilingIfNotGPU()); mfi.isValid(); ++mfi)
           {
             Box const& bx = mfi.tilebox();
@@ -712,7 +724,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                  AMREX_D_DECL(flux_x[lev].const_array(mfi,flux_comp),
                                                               flux_y[lev].const_array(mfi,flux_comp),
                                                               flux_z[lev].const_array(mfi,flux_comp)),
-                                                 vfrac.const_array(mfi), m_ntrac, geom[lev]);
+                                                 vfrac.const_array(mfi), m_ntrac, geom[lev], mult);
 //                                               get_tracer_iconserv_device_ptr(),
 #else
             HydroUtils::ComputeDivergence(bx, conv_t[lev]->array(mfi),
@@ -726,7 +738,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                        v_mac[lev]->const_array(mfi),
                                                        w_mac[lev]->const_array(mfi)),
                                           m_ntrac, geom[lev],
-                                          get_tracer_iconserv_device_ptr());
+                                          get_tracer_iconserv_device_ptr(), mult);
 #endif
           } // mfi
         } // advect tracer
