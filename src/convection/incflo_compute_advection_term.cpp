@@ -49,6 +49,8 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
 {
     int ngmac = nghost_mac();
 
+    bool fluxes_are_area_weighted = false;
+
 #ifdef AMREX_USE_EB
     amrex::Print() << "REDISTRIBUTION TYPE " << m_redistribution_type << std::endl;
 #endif
@@ -108,6 +110,8 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
 
     Vector<Array<MultiFab*,AMREX_SPACEDIM> > inv_rho(finest_level+1);
     Vector<Array<MultiFab*,AMREX_SPACEDIM> > fluxes(finest_level+1);
+    Vector<Array<MultiFab*,AMREX_SPACEDIM> > macvel(finest_level+1);
+    Vector<Array<MultiFab*,AMREX_SPACEDIM> >  faces(finest_level+1);
 
     for (int lev=0; lev <= finest_level; ++lev)
     {
@@ -115,9 +119,17 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                      inv_rho[lev][1] = &inv_rho_y[lev];,
                      inv_rho[lev][2] = &inv_rho_z[lev];);
 
+        AMREX_D_TERM(faces[lev][0] = &face_x[lev];,
+                     faces[lev][1] = &face_y[lev];,
+                     faces[lev][2] = &face_z[lev];);
+
         AMREX_D_TERM(fluxes[lev][0] = &flux_x[lev];,
                      fluxes[lev][1] = &flux_y[lev];,
                      fluxes[lev][2] = &flux_z[lev];);
+
+        AMREX_D_TERM(macvel[lev][0] = u_mac[lev];,
+                     macvel[lev][1] = v_mac[lev];,
+                     macvel[lev][2] = w_mac[lev];);
     }
 
     for (int lev = 0; lev <= finest_level; ++lev) {
@@ -334,7 +346,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                           face_z[lev].array(mfi,edge_comp)),
                                              AMREX_D_DECL(apx,apy,apz),
                                              geom[lev], AMREX_SPACEDIM,
-                                             flag);
+                                             flag, fluxes_are_area_weighted);
 
               else
 #endif
@@ -348,7 +360,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                            AMREX_D_DECL(face_x[lev].array(mfi,edge_comp),
                                                         face_y[lev].array(mfi,edge_comp),
                                                         face_z[lev].array(mfi,edge_comp)),
-                                           geom[lev], AMREX_SPACEDIM );
+                                           geom[lev], AMREX_SPACEDIM, fluxes_are_area_weighted );
 
             // ************************************************************************
             // Density
@@ -449,7 +461,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                         face_y[lev].array(mfi,edge_comp),
                                                         face_z[lev].array(mfi,edge_comp)),
                                            AMREX_D_DECL(apx,apy,apz),
-                                           geom[lev], 1, flag);
+                                           geom[lev], 1, flag, fluxes_are_area_weighted);
               else
 #endif
                 HydroUtils::ComputeFluxes(bx,
@@ -462,7 +474,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                           AMREX_D_DECL(face_x[lev].array(mfi,edge_comp),
                                                        face_y[lev].array(mfi,edge_comp),
                                                        face_z[lev].array(mfi,edge_comp)),
-                                          geom[lev], 1 );
+                                          geom[lev], 1, fluxes_are_area_weighted );
             } // !constant_density
 
             // ************************************************************************
@@ -583,7 +595,7 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                             face_z[lev].array(mfi,edge_comp)),
                                                AMREX_D_DECL(apx,apy,apz),
                                                geom[lev], m_ntrac,
-                                               flag);
+                                               flag, fluxes_are_area_weighted);
                 else
 #endif
                   HydroUtils::ComputeFluxes(bx,
@@ -596,19 +608,24 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                             AMREX_D_DECL(face_x[lev].array(mfi,edge_comp),
                                                          face_y[lev].array(mfi,edge_comp),
                                                          face_z[lev].array(mfi,edge_comp)),
-                                             geom[lev], m_ntrac );
+                                             geom[lev], m_ntrac, fluxes_are_area_weighted );
             } // Tracer
         } // mfi
     } // lev
 
     // In order to enforce conservation across coarse-fine boundaries we must be sure to average down the fluxes
-    //    before we use them
+    //    before we use them.  Note we also need to average down the MAC velocities and face states if we are going to do
+    //    convective differencing
     for (int lev = finest_level; lev > 0; --lev)
     {
         IntVect rr  = geom[lev].Domain().size() / geom[lev-1].Domain().size();
 #ifdef AMREX_USE_EB
+        EB_average_down_faces(GetArrOfConstPtrs(macvel[lev]),macvelu[lev-1], rr, geom[lev-1]);
+        EB_average_down_faces(GetArrOfConstPtrs( faces[lev]),  faces[lev-1], rr, geom[lev-1]);
         EB_average_down_faces(GetArrOfConstPtrs(fluxes[lev]), fluxes[lev-1], rr, geom[lev-1]);
 #else
+        average_down_faces(GetArrOfConstPtrs(macvel[lev]), macvel[lev-1], rr, geom[lev-1]);
+        average_down_faces(GetArrOfConstPtrs( faces[lev]),  faces[lev-1], rr, geom[lev-1]);
         average_down_faces(GetArrOfConstPtrs(fluxes[lev]), fluxes[lev-1], rr, geom[lev-1]);
 #endif
     }
@@ -656,8 +673,9 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                               flux_y[lev].const_array(mfi,flux_comp),
                                                               flux_z[lev].const_array(mfi,flux_comp)),
                                                  vfrac.const_array(mfi), AMREX_SPACEDIM, geom[lev],
-                                                 mult);
+                                                 mult,
 //                                               get_velocity_iconserv_device_ptr(),
+                                                 fluxes_are_area_weighted);
 #else
             HydroUtils::ComputeDivergence(bx, conv_u[lev]->array(mfi),
                                           AMREX_D_DECL(flux_x[lev].const_array(mfi,flux_comp),
@@ -670,7 +688,8 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                        v_mac[lev]->const_array(mfi),
                                                        w_mac[lev]->const_array(mfi)),
                                           AMREX_SPACEDIM, geom[lev],
-                                          get_velocity_iconserv_device_ptr(), mult);
+                                          get_velocity_iconserv_device_ptr(), mult,
+                                          fluxes_are_area_weighted);
 #endif
         } // mfi
 
@@ -689,8 +708,9 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                  AMREX_D_DECL(flux_x[lev].const_array(mfi,flux_comp),
                                                               flux_y[lev].const_array(mfi,flux_comp),
                                                               flux_z[lev].const_array(mfi,flux_comp)),
-                                                 vfrac.const_array(mfi), 1, geom[lev], mult);
+                                                 vfrac.const_array(mfi), 1, geom[lev], mult,
 //                                               get_density_iconserv_device_ptr(),
+                                                 fluxes_are_area_weighted);
 #else
             HydroUtils::ComputeDivergence(bx, conv_r[lev]->array(mfi),
                                           AMREX_D_DECL(flux_x[lev].const_array(mfi,flux_comp),
@@ -703,7 +723,8 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                        v_mac[lev]->const_array(mfi),
                                                        w_mac[lev]->const_array(mfi)),
                                           1, geom[lev],
-                                          get_density_iconserv_device_ptr(), mult);
+                                          get_density_iconserv_device_ptr(), mult,
+                                          fluxes_are_area_weighted);
 #endif
           } // mfi
         } // not constant density
@@ -726,7 +747,8 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                  AMREX_D_DECL(flux_x[lev].const_array(mfi,flux_comp),
                                                               flux_y[lev].const_array(mfi,flux_comp),
                                                               flux_z[lev].const_array(mfi,flux_comp)),
-                                                 vfrac.const_array(mfi), m_ntrac, geom[lev], mult);
+                                                 vfrac.const_array(mfi), m_ntrac, geom[lev], mult,
+                                                 fluxes_are_area_weighted);
 //                                               get_tracer_iconserv_device_ptr(),
 #else
             HydroUtils::ComputeDivergence(bx, conv_t[lev]->array(mfi),
@@ -740,7 +762,8 @@ incflo::compute_convective_term (Vector<MultiFab*> const& conv_u,
                                                        v_mac[lev]->const_array(mfi),
                                                        w_mac[lev]->const_array(mfi)),
                                           m_ntrac, geom[lev],
-                                          get_tracer_iconserv_device_ptr(), mult);
+                                          get_tracer_iconserv_device_ptr(), mult,
+                                          fluxes_are_area_weighted);
 #endif
           } // mfi
         } // advect tracer
