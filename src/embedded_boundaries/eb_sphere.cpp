@@ -45,3 +45,38 @@ void incflo::make_eb_sphere()
     int max_coarsening_level = 100;
     EB2::Build(gshop, geom.back(), max_level_here, max_level_here + max_coarsening_level);
 }
+
+void incflo::make_eb_sphere2()
+{
+    // Initialise sphere parameters
+    bool inside = true;
+    Real radius = 0.0002;
+    Vector<Real> centervec(3);
+
+    // Get sphere information from inputs file.                               *
+    ParmParse pp("sphere");
+
+    pp.query("internal_flow", inside);
+    pp.query("radius", radius);
+    pp.getarr("center", centervec, 0, 3);
+    Array<Real, AMREX_SPACEDIM> center = {AMREX_D_DECL(1.0, 1.0, 0.0)};
+
+    // Print info about sphere
+    amrex::Print() << " " << std::endl;
+    amrex::Print() << " Internal Flow: " << inside << std::endl;
+    amrex::Print() << " Radius:    " << radius << std::endl;
+    amrex::Print() << " Center:    " << center[0] << ", " << center[1] << ", " << center[2]
+                   << std::endl;
+
+    // Build the sphere implicit function
+    EB2::SphereIF my_sphere(0.5, center, inside);
+
+    // Generate GeometryShop
+    auto gshop = EB2::makeShop(my_sphere);
+
+    // Build index space
+    int max_level_here = 0;
+    int max_coarsening_level = 100;
+    EB2::Build(gshop, geom.back(), max_level_here, max_level_here + max_coarsening_level);
+}
+

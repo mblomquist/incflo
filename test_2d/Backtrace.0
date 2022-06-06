@@ -1,0 +1,25 @@
+=== If no file names and line numbers are shown below, one can run
+            addr2line -Cpfie my_exefile my_line_address
+    to convert `my_line_address` (e.g., 0x4a6b) into file name and line number.
+    Or one can use amrex/Tools/Backtrace/parse_bt.py.
+
+=== Please note that the line number reported by addr2line may not be accurate.
+    One can use
+            readelf -wl my_exefile | grep my_line_address'
+    to find out the offset for that line.
+
+ 0: ./incflo2d.gnu.MPI.EB.ex(+0x2e5095) [0x559782df8095]
+    amrex::BLBackTrace::print_backtrace_info(_IO_FILE*) at /home/mblomquist/LBL/AMReX-Codes/incflo/test_2d/../../amrex/Src/Base/AMReX_BLBackTrace.cpp:179
+
+ 1: ./incflo2d.gnu.MPI.EB.ex(+0x2e6f45) [0x559782df9f45]
+    amrex::BLBackTrace::handler(int) at /home/mblomquist/LBL/AMReX-Codes/incflo/test_2d/../../amrex/Src/Base/AMReX_BLBackTrace.cpp:85
+
+ 2: ./incflo2d.gnu.MPI.EB.ex(+0x34e97) [0x559782b47e97]
+    amrex::Abort(char const*) at /home/mblomquist/LBL/AMReX-Codes/incflo/test_2d/../../amrex/Src/Base/AMReX.H:157
+ (inlined by) main at /home/mblomquist/LBL/AMReX-Codes/incflo/test_2d/../src/main.cpp:35
+
+ 3: /lib/x86_64-linux-gnu/libc.so.6(__libc_start_main+0xf3) [0x7f843f37b083]
+
+ 4: ./incflo2d.gnu.MPI.EB.ex(+0x3c8ee) [0x559782b4f8ee]
+    ?? ??:0
+

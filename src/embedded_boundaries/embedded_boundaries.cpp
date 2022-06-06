@@ -73,3 +73,11 @@ void incflo::MakeEBGeometry()
     }
     amrex::Print() << "Done making the geometry ebfactory.\n" << std::endl;
 }
+
+void incflo::AdvanceEBGeometry()
+{
+    // Nothing here yet... 
+    amrex::Print() << "Advancing the EB Geometry." << std::endl;
+    make_eb_sphere2();
+
+}

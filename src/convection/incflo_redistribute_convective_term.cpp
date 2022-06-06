@@ -32,7 +32,7 @@ incflo::redistribute_convective_term ( Box const& bx, MFIter const& mfi,
     bool regular = (flagfab.getType(amrex::grow(bx,4)) == FabType::regular);
 
     Array4<Real const> AMREX_D_DECL(fcx, fcy, fcz), AMREX_D_DECL(apx, apy, apz);
-    Array4<Real const> ccc, vfrac;
+    Array4<Real const> bcc, ccc, vfrac;
 
     if (!regular)
     {
@@ -71,10 +71,12 @@ incflo::redistribute_convective_term ( Box const& bx, MFIter const& mfi,
 
         // velocity
         auto const& bc_vel = get_velocity_bcrec_device_ptr();
+        amrex::Print() << "\n DOING VEL \n " << std::endl;
         Redistribution::Apply(bx, AMREX_SPACEDIM, dvdt, dvdt_tmp, vel, scratch, flag,
                               AMREX_D_DECL(apx, apy, apz), vfrac,
                               AMREX_D_DECL(fcx, fcy, fcz), ccc,
                               bc_vel, lev_geom, l_dt, l_redistribution_type);
+
 
         // density
         if (!l_constant_density) {
@@ -92,6 +94,7 @@ incflo::redistribute_convective_term ( Box const& bx, MFIter const& mfi,
         }
 
         if (l_advect_tracer) {
+        amrex::Print() << "\n DOING TRAC \n " << std::endl;
             auto const& bc_tra = get_tracer_bcrec_device_ptr();
             Redistribution::Apply(bx, l_ntrac, dtdt, dtdt_tmp, rhotrac, scratch, flag,
                                   AMREX_D_DECL(apx, apy, apz), vfrac,
