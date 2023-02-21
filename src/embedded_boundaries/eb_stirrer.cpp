@@ -51,14 +51,19 @@ void incflo::make_eb_stirrer(Real time)
     // Rotate the stirrer
     ParmParse eb("eb_flow");
     Vector<Real> omega(3);
+    Vector<Real> center_of_rotation(3);
+
     eb.queryarr("omega", omega, 0, 3);
+    eb.queryarr("center_of_rotation", center_of_rotation, 0, 3);
 
     Real alpha  = omega[2]*time;
     Real beta   = omega[1]*time;
     Real gamma  = omega[0]*time;
 
     auto stirrer_at_center = EB2::translate(stirrer, {
-                                AMREX_D_DECL(-domain_center_x,-domain_center_y,-domain_center_z)});
+                                AMREX_D_DECL(-center_of_rotation[0],
+                                             -center_of_rotation[1],
+                                             -center_of_rotation[2])});
 
     auto rotated_stirrer_at_center = EB2::rotate( 
                                         EB2::rotate(
