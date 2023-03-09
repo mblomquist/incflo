@@ -3,7 +3,7 @@ amrex.fpe_trap_invalid = 1
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
 #            SIMULATION STOP            #
 #.......................................#
-max_step                =  2            # Max number of time steps
+max_step                =  40            # Max number of time steps
 steady_state            =  0            # Steady-state solver? 
 
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
@@ -32,7 +32,7 @@ incflo.constant_density =   false       #
 incflo.advect_momentum       =  1
 incflo.advection_type        =  "Godunov" 
 incflo.advection_type        =  "MOL" 
-incflo.diffusion_type        =  0
+incflo.diffusion_type        =  2
 incflo.redistribution_type   =  "StateRedist" 
 #incflo.redistribution_type   =  "NoRedist" 
 
@@ -42,7 +42,7 @@ incflo.godunov_include_diff_in_forcing = false
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
 #        ADAPTIVE MESH REFINEMENT       #
 #.......................................#
-amr.n_cell              =   34 16       # Grid cells at coarsest AMRlevel
+amr.n_cell              =   68 32       # Grid cells at coarsest AMRlevel
 amr.max_level           =   0           # Max AMR level in hierarchy 
 amr.max_grid_size_x     =   1024
 amr.max_grid_size_y     =   1024
@@ -80,12 +80,11 @@ incflo.ic_p             =   0.0         #
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
 #              VERBOSITY                #
 #.......................................#
-incflo.verbose            =   1         # incflo itself
-mac_proj.verbose          =   1         # MAC Projector
-nodal_proj.verbose        =   1         # Nodal Projector
-
+incflo.verbose            =   2         # incflo itself
+mac_proj.verbose          =   2         # MAC Projector
+nodal_proj.verbose        =   2         # Nodal Projector
+scalar_diffusion.verbose  =   2
 #.......................................#
 #               EB FLOW                 #
 #.......................................#
 eb_flow.velocity        = 1.0 0.0 0.0
-eb_flow.density         = 1.0
