@@ -3,13 +3,13 @@ amrex.fpe_trap_invalid = 1
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
 #            SIMULATION STOP            #
 #.......................................#
-max_step                =  40            # Max number of time steps
+max_step                =  40           # Max number of time steps
 steady_state            =  0            # Steady-state solver? 
 
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
 #         TIME STEP COMPUTATION         #
 #.......................................#
-incflo.fixed_dt             =   1.e-3     # Use this constant dt if > 0
+incflo.fixed_dt             =   2.e-2     # Use this constant dt if > 0
 incflo.do_initial_proj      =   1
 incflo.initial_iterations   =   0
 
@@ -42,7 +42,7 @@ incflo.godunov_include_diff_in_forcing = false
 #¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨¨#
 #        ADAPTIVE MESH REFINEMENT       #
 #.......................................#
-amr.n_cell              =   68 32       # Grid cells at coarsest AMRlevel
+amr.n_cell              =   34 16       # Grid cells at coarsest AMRlevel
 amr.max_level           =   0           # Max AMR level in hierarchy 
 amr.max_grid_size_x     =   1024
 amr.max_grid_size_y     =   1024
@@ -84,6 +84,7 @@ incflo.verbose            =   2         # incflo itself
 mac_proj.verbose          =   2         # MAC Projector
 nodal_proj.verbose        =   2         # Nodal Projector
 scalar_diffusion.verbose  =   2
+tensor_diffusion.mg_verbose = 4
 #.......................................#
 #               EB FLOW                 #
 #.......................................#
